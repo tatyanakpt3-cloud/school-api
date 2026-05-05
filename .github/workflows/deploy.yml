@@ -1,0 +1,38 @@
+name: Deploy School API
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Тесты
+        run: |
+          pip install fastapi "uvicorn[standard]" psycopg2-binary pytest pytest-asyncio httpx python-multipart anyio
+          cd school-api && python3 -m pytest tests/ -q
+
+      - name: Деплой на NL (aha-moment.online)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.NL_HOST }}
+          username: root
+          key: ${{ secrets.NL_SSH_KEY }}
+          script: |
+            git pull origin main
+            school-deploy
+
+      - name: Деплой на mira.school
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.MIRA_HOST }}
+          username: ubuntu
+          key: ${{ secrets.MIRA_SSH_KEY }}
+          script: |
+            cd /opt/school-api && git pull origin main
+            sudo systemctl restart school-api-v2
+            sleep 3
+            curl -s http://127.0.0.1:3516/api/v2/health | grep -q "ok"

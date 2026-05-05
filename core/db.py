@@ -2,6 +2,10 @@ from contextlib import contextmanager
 from datetime import datetime
 import psycopg2
 import psycopg2.extras
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 from .config import DB_NL, DB_RU, MSK
 
 # Отдельные credentials для API-роли (попадает под RLS)

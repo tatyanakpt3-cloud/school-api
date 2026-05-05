@@ -1,4 +1,7 @@
-from zoneinfo import ZoneInfo
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
 MSK = ZoneInfo("Europe/Moscow")
 

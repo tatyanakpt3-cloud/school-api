@@ -15,9 +15,10 @@ from modules.auth.router     import router as auth_router
 from modules.students.router import router as students_router
 from modules.lessons.router  import router as lessons_router
 from modules.salary.router   import router as salary_router
-from modules.notes.router    import router as notes_router
-from modules.staff.router    import router as staff_router
-from modules.vpr.router      import router as vpr_router
+from modules.notes.router       import router as notes_router
+from modules.staff.router       import router as staff_router
+from modules.vpr.router         import router as vpr_router
+from modules.onboarding.router  import router as onboarding_router
 
 app = FastAPI(
     title="School API",
@@ -43,9 +44,10 @@ app.include_router(auth_router,     prefix="/api/v2")
 app.include_router(students_router, prefix="/api/v2")
 app.include_router(lessons_router,  prefix="/api/v2")
 app.include_router(salary_router,   prefix="/api/v2")
-app.include_router(notes_router,    prefix="/api/v2")
-app.include_router(staff_router,    prefix="/api/v2")
-app.include_router(vpr_router,      prefix="/api/v2")
+app.include_router(notes_router,      prefix="/api/v2")
+app.include_router(staff_router,      prefix="/api/v2")
+app.include_router(vpr_router,        prefix="/api/v2")
+app.include_router(onboarding_router, prefix="/api/v2")
 
 
 @app.get("/api/v2/health")
