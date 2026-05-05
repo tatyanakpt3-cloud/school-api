@@ -113,6 +113,13 @@ def schedule_action(request: Request, data: dict):
                 return {"ok": bool(cur.fetchone())}
 
             if action == "add":
+                # Время всегда в МСК — проверяем что не ночное (00:00-03:59)
+                t = data.get("time", "")
+                if t and t < "04:00":
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Время урока {t} МСК некорректно. Уроки создаются в МСК (не ранее 04:00)."
+                    )
                 cur.execute(
                     "INSERT INTO school_schedule (student_id, teacher_id, lesson_date, lesson_time, duration_min, status) "
                     "VALUES (%s, %s, %s, %s, %s, 'scheduled') RETURNING id",

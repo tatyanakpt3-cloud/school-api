@@ -3,8 +3,15 @@ School API — модульное ядро платформы.
 Порт 3515 (параллельно старому 3512 — Strangler Fig).
 Подключение в nginx постепенно, модуль за модулем.
 """
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from core.monitoring import MonitoringMiddleware
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(name)s] %(message)s",
+)
 
 from modules.schedule.router import router as schedule_router
 from modules.homework.router import router as homework_router
@@ -26,6 +33,7 @@ app = FastAPI(
     version="2.0.0",
 )
 
+app.add_middleware(MonitoringMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://aha-moment.online", "https://mira.school",
@@ -52,4 +60,26 @@ app.include_router(onboarding_router, prefix="/api/v2")
 
 @app.get("/api/v2/health")
 def health():
-    return {"status": "ok", "version": "2.0.0"}
+    import time
+    from core.db import get_conn
+    try:
+        t = time.monotonic()
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1")
+        conn.close()
+        db_ms = int((time.monotonic() - t) * 1000)
+        db_ok = True
+    except Exception as e:
+        db_ms = -1
+        db_ok = False
+    return {"status": "ok", "version": "2.0.0", "db_ok": db_ok, "db_ms": db_ms}
+
+
+@app.get("/api/v2/metrics")
+def metrics():
+    from core.monitoring import ERROR_5XX
+    return {
+        "recent_errors": ERROR_5XX[-10:],
+        "error_count": len(ERROR_5XX),
+    }
