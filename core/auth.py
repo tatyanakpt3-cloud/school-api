@@ -4,9 +4,16 @@ from .db import get_conn
 
 
 def get_token(request: Request) -> str:
-    cookie = request.cookies.get("school_token", "")
-    header = request.headers.get("X-School-Token", "")
-    return cookie or header
+    # Cookie
+    token = request.cookies.get("school_token", "") or request.cookies.get("mira_token", "")
+    if token:
+        return token
+    # Authorization: Bearer <token>
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        return auth[7:].strip()
+    # X-School-Token header
+    return request.headers.get("X-School-Token", "")
 
 
 def require_auth(request: Request) -> dict:

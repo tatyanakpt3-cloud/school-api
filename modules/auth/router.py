@@ -15,8 +15,19 @@ def check(request: Request):
                 "UPDATE school_auth_tokens SET last_login=%s WHERE token=%s",
                 (now_msk(), get_token(request)),
             )
-    return {"ok": True, "role": user["role"], "name": user["name"],
-            "ref_id": user["ref_id"]}
+    # Возвращаем и плоский формат и вложенный user{} — совместимость с разными версиями фронтенда
+    return {
+        "ok": True,
+        "role": user["role"],
+        "name": user["name"],
+        "ref_id": user["ref_id"],
+        "user": {
+            "id": user.get("ref_id"),
+            "role": user["role"],
+            "name": user["name"],
+            "ref_id": user["ref_id"],
+        }
+    }
 
 
 @router.post("/logout")
